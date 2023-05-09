@@ -1,81 +1,72 @@
 import { fetchGallery } from './Api/AxiosAPI';
 import { ToastContainer } from 'react-toastify';
-import { SearchBar } from './Searchbar/Searchbar';
-import { Component } from 'react';
-import { ImageGallery } from './ImageGallery/ImageGallery';
-import { Modal } from './Modal/Modal';
+import { SearchBar } from '../components/Searchbar/Searchbar';
+import { useState, useEffect } from 'react';
+import { ImageGallery } from '../components/ImageGallery/ImageGallery';
+// import { ImageItem } from '../components/ImageGalleryItem/ImageGalleryItem';
+import { Modal } from '../components/Modal/Modal';
 import { Container } from './App.styled';
-import { Loader } from './Loader/Loader';
-import { LoadMore } from './ButtonLoadMore/Button';
+import { Loader } from '../components/Loader/Loader';
+import { LoadMore } from '../components/ButtonLoadMore/Button';
+// import Image from './ImageGalleryItem';
+export const App = () => {
+  const [query, setQuery] = useState();
+  const [isLoading, setIsloading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [modalImage, setModalImage] = useState();
+  const [showModal, setShowModal] = useState(false);
+  const [totalHits, setTotalHits] = useState();
 
-export class App extends Component {
-  state = {
-    query: '',
-    isLoading: false,
-    page: 1,
-    images: [],
-    largeImageURL: '',
-    showModal: false,
-    showBtn: false,
-    showbegin: false,
-  };
-  componentDidUpdate = (_, prevState) => {
-    if (
-      this.state.query !== prevState.query ||
-      this.state.page !== prevState.page
-    ) {
-      this.setState({ isLoading: true });
-      fetchGallery(this.state.query, this.state.page)
-        .then(data => {
-          this.setState(prevState => ({
-            images: [...prevState.images, ...data.hits],
-            showBtn: this.state.page <= Math.ceil(data.totalHits / 12),
-          }));
-        })
-        .finally(() => {
-          this.setState({ isLoading: false });
-        });
-    }
-  };
-
-  handleFormSubmit = query => {
-    this.setState({ query, page: 1, images: [] });
-  };
-
-  toggleModal = largeImageURL => {
-    if (!largeImageURL) {
-      this.setState({
-        largeImageURL: '',
-        showModal: false,
-      });
+  useEffect(() => {
+    if (!query) {
       return;
     }
-    this.setState({
-      largeImageURL,
-      showModal: true,
-      modalImage: largeImageURL,
-    });
+    setIsloading(true);
+    fetchGallery(query, page)
+      .then(data => {
+        setImages(prevState =>
+          page === 1 ? [...data.hits] : [...prevState, ...data.hits]
+        );
+        setTotalHits(prevState =>
+          page === 1 ? prevState - data.hits.length : [...data.hits].length
+        );
+      })
+      .finally(() => {
+        setIsloading(false);
+      });
+  }, [query, page]);
+
+  const handleFormSubmit = query => {
+    setQuery(query);
+    setPage(1);
   };
 
-  handleLoadMore = () => {
-    this.setState(state => ({ page: state.page + 1 }));
-    console.log(this.state.page);
+  const toggleModal = modalImage => {
+    if (!modalImage) {
+      setModalImage('');
+      setShowModal(false);
+      return;
+    }
+    setModalImage(modalImage);
+    setShowModal(true);
   };
 
-  render() {
-    const { handleFormSubmit, toggleModal, handleLoadMore } = this;
-    const { isLoading, images, showBtn, showModal, modalImage } = this.state;
-    return (
-      <Container>
-        <SearchBar onSubmit={handleFormSubmit} />
-        {isLoading && <Loader />}
-        <ImageGallery images={images} openModal={toggleModal} />
-        {showBtn && <LoadMore onLoadMore={handleLoadMore} />}
-        {showModal && (
-          <Modal closeModal={toggleModal} modalImage={modalImage} />
-        )}
-        <ToastContainer autoClose={2500} />
-      </Container>
-    );
-  }
-}
+  const handleLoadMore = () => {
+    setPage(prevState => prevState + 1);
+  };
+
+  // const { handleFormSubmit, toggleModal, handleLoadMore } = this;
+  // const { isLoading, images, totalHits, showModal, modalImage } = this.state;
+  return (
+    <Container>
+      <SearchBar onSubmit={handleFormSubmit} />
+      {isLoading && <Loader />}
+      <ImageGallery images={images} openModal={toggleModal} />
+      {!!totalHits && <LoadMore onLoadMore={handleLoadMore} />}
+      {showModal && <Modal closeModal={toggleModal} modalImage={modalImage} />}
+
+      <ToastContainer autoClose={2500} />
+    </Container>
+  );
+};
