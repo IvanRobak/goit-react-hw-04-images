@@ -18,11 +18,13 @@ export const SearchBar = ({ onSubmit }) => {
     setQuery(e.currentTarget.value);
   };
   const handleSubmit = e => {
+    e.preventDefault();
     if (query.trim() === '') {
       return toast.error('Введите слово для поиска');
     }
-    e.preventDefault();
+
     onSubmit(query);
+    setQuery('');
   };
 
   return (

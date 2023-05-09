@@ -16,7 +16,7 @@ export const App = () => {
   const [images, setImages] = useState([]);
   const [modalImage, setModalImage] = useState();
   const [showModal, setShowModal] = useState(false);
-  const [totalHits, setTotalHits] = useState();
+  const [totalHits, setTotalHits] = useState(0);
 
   useEffect(() => {
     if (!query) {
@@ -25,11 +25,13 @@ export const App = () => {
     setIsloading(true);
     fetchGallery(query, page)
       .then(data => {
-        setImages(prevState =>
-          page === 1 ? [...data.hits] : [...prevState, ...data.hits]
+        setImages(prevImages =>
+          page === 1 ? [...data.hits] : [...prevImages, ...data.hits]
         );
-        setTotalHits(prevState =>
-          page === 1 ? prevState - data.hits.length : [...data.hits].length
+        setTotalHits(prevPages =>
+          page === 1
+            ? prevPages - data.hits.length
+            : prevPages - [...data.hits].length
         );
       })
       .finally(() => {
@@ -56,17 +58,17 @@ export const App = () => {
     setPage(prevState => prevState + 1);
   };
 
-  // const { handleFormSubmit, toggleModal, handleLoadMore } = this;
-  // const { isLoading, images, totalHits, showModal, modalImage } = this.state;
   return (
     <Container>
       <SearchBar onSubmit={handleFormSubmit} />
       {isLoading && <Loader />}
       <ImageGallery images={images} openModal={toggleModal} />
-      {!!totalHits && <LoadMore onLoadMore={handleLoadMore} />}
+      {!!totalHits && images.length >= 12 && (
+        <LoadMore onLoadMore={handleLoadMore} />
+      )}
       {showModal && <Modal closeModal={toggleModal} modalImage={modalImage} />}
 
-      <ToastContainer autoClose={2500} />
+      <ToastContainer autoClose={3500} />
     </Container>
   );
 };
