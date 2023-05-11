@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import { createPortal } from 'react-dom';
-import { useEffect } from 'react';
+import { useEffect, useCallback } from 'react';
 import { Overlay, ModalWindow, Button, Img } from '../Modal/Modal.styled';
-// import { Loader } from '../Loader/Loader';
+
 const modalRoot = document.querySelector('#modal-root');
 
 export const Modal = ({ closeModal, modalImage }) => {
@@ -18,16 +18,17 @@ export const Modal = ({ closeModal, modalImage }) => {
     };
   }, [closeModal]);
 
-  // const { closeModal, modalImage } = this.props;
+  const handleOverlayClick = useCallback(
+    e => {
+      if (e.target === e.currentTarget) {
+        closeModal();
+      }
+    },
+    [closeModal]
+  );
+
   return createPortal(
-    <Overlay
-      onClick={e => {
-        if (e.target === e.currentTarget) {
-          closeModal();
-        }
-      }}
-    >
-      {' '}
+    <Overlay onClick={handleOverlayClick}>
       <Button type="button" onClick={() => closeModal()}>
         X
       </Button>

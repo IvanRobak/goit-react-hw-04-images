@@ -25,9 +25,7 @@ export const App = () => {
     setIsloading(true);
     fetchGallery(query, page)
       .then(data => {
-        setImages(prevImages =>
-          page === 1 ? [...data.hits] : [...prevImages, ...data.hits]
-        );
+        setImages(prevImages => [...prevImages, ...data.hits]);
         setTotalHits(prevPages =>
           page === 1
             ? prevPages - data.hits.length
@@ -42,6 +40,7 @@ export const App = () => {
   const handleFormSubmit = query => {
     setQuery(query);
     setPage(1);
+    setImages([]);
   };
 
   const toggleModal = modalImage => {
