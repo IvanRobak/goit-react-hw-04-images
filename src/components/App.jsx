@@ -3,12 +3,11 @@ import { ToastContainer } from 'react-toastify';
 import { SearchBar } from '../components/Searchbar/Searchbar';
 import { useState, useEffect } from 'react';
 import { ImageGallery } from '../components/ImageGallery/ImageGallery';
-// import { ImageItem } from '../components/ImageGalleryItem/ImageGalleryItem';
 import { Modal } from '../components/Modal/Modal';
 import { Container } from './App.styled';
 import { Loader } from '../components/Loader/Loader';
 import { LoadMore } from '../components/ButtonLoadMore/Button';
-// import Image from './ImageGalleryItem';
+
 export const App = () => {
   const [query, setQuery] = useState();
   const [isLoading, setIsloading] = useState(false);
@@ -16,7 +15,7 @@ export const App = () => {
   const [images, setImages] = useState([]);
   const [modalImage, setModalImage] = useState();
   const [showModal, setShowModal] = useState(false);
-  const [totalHits, setTotalHits] = useState(0);
+  const [showLoadMore, setShowLoadMore] = useState(false);
 
   useEffect(() => {
     if (!query) {
@@ -26,11 +25,7 @@ export const App = () => {
     fetchGallery(query, page)
       .then(data => {
         setImages(prevImages => [...prevImages, ...data.hits]);
-        setTotalHits(prevPages =>
-          page === 1
-            ? prevPages - data.hits.length
-            : prevPages - [...data.hits].length
-        );
+        setShowLoadMore(page < Math.ceil(data.totalHits / 12));
       })
       .finally(() => {
         setIsloading(false);
@@ -62,7 +57,7 @@ export const App = () => {
       <SearchBar onSubmit={handleFormSubmit} />
       {isLoading && <Loader />}
       <ImageGallery images={images} openModal={toggleModal} />
-      {!!totalHits && images.length >= 12 && (
+      {showLoadMore && (
         <LoadMore onLoadMore={handleLoadMore} />
       )}
       {showModal && <Modal closeModal={toggleModal} modalImage={modalImage} />}

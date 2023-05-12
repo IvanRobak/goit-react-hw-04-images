@@ -1,6 +1,6 @@
 import PropTypes from 'prop-types';
 import { createPortal } from 'react-dom';
-import { useEffect, useCallback } from 'react';
+import { useEffect } from 'react';
 import { Overlay, ModalWindow, Button, Img } from '../Modal/Modal.styled';
 
 const modalRoot = document.querySelector('#modal-root');
@@ -18,14 +18,11 @@ export const Modal = ({ closeModal, modalImage }) => {
     };
   }, [closeModal]);
 
-  const handleOverlayClick = useCallback(
-    e => {
-      if (e.target === e.currentTarget) {
-        closeModal();
-      }
-    },
-    [closeModal]
-  );
+  function handleOverlayClick(e) {
+    if (e.target === e.currentTarget) {
+      closeModal();
+    }
+  }
 
   return createPortal(
     <Overlay onClick={handleOverlayClick}>
